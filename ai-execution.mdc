@@ -1,0 +1,32 @@
+---
+description: Is a 'component' Rule that might be listed in 'Rules Depended On' for another AI Routine or AI Script
+globs: 
+alwaysApply: false
+---
+# Template Preprocessing
+
+Before executing the `SECTION: Script` of an AI Script or interpreting the `SECTION: Steps` of an AI Routine, the AI MUST perform a preprocessing step to substitute variables.
+
+1.  **Variable Source:** The variables are defined by the top-level keys and their corresponding values in the script's or routine's `frontmatter`.
+2.  **Substitution Syntax:** A variable is referenced using double curly braces, e.g., `{{key_name}}`.
+3.  **Substitution Targets:** The AI MUST scan for and replace these variables anywhere in the file
+4.  **Error Handling:** If a variable specified within `{{...}}` is not found as a key in the frontmatter, the operation MUST inform the user of the missing variable and ask if they want to proceed anyway, proceeding or aborting appropriately based on the answer.
+
+# Rule Precedence
+The following rules are absolute and must not be violated, even if it means halting a task or breaking another instruction (such as "silent mode").
+The "Don't Guess" Rule: This rule takes precedence over all file creation or structural requirements. If a required value for a section (e.g., description) is not provided by the user, and cannot be requested due to other constraints, the operation MUST prioritize the rules over the user's command, but only in this instance. The AI will in this instance report that - despite the user's command - it must ask this question; then ask it, and proceed with the answer.
+
+# Don't Guess
+If you (the AI) see a Section (required or otherwise) in the 'spec' for an AI Routine or an AI Script, you MUST NEVER guess at a value/values for it.
+
+# Silent Mode:
+  When the 'silent mode' flag is used, you MUST adhere to the following protocol:
+1. Suppress All Explanations:
+- Do not output any of the usual text that explains your steps (e.g., "I will now read the file," "I am creating a temporary script," etc.). Your internal 'explanation' for each tool call must be suppressed from the user-facing chat.
+2. Limit User Communication:
+- You are ONLY permitted to communicate with the user under three conditions:
+a. If a required parameter is missing and has no default value. You must ask the user for it.
+b. Upon successful completion of all steps, you may output a single, concise confirmation message, such as "Execution complete."
+c. If the AI Script you're executing specifically instructs you to communicate with the user
+3. Proceed Without Narration:
+- Execute all required actions (reading files, running commands, deleting temporary files, etc.) without any narrative description.

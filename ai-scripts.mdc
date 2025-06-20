@@ -1,0 +1,75 @@
+---
+description: Describes how to handle AI Scripts
+globs: 
+alwaysApply: false
+---
+# AI Scripts Protocol
+
+## Matching this rule
+This rule is triggered with the following prompts, or with instructions in other Scripts that 'look like the prompt':
+ "Run AI Script XXX" (where 'XXX' is the AI Script name)
+ -- First, tell the user that you're about to run the AI Script and tell them the description
+ -- Then - always - read the AI Script file that matched
+ -- Then, execute the script in the "Script" section
+ -- The script will be 'runnable' in something.  Like it might be a bash script.  As described below, the AI Script file will give you information about that.  Run the script accordingly.
+ -- The script might have parameters.  If so, you can expect that the parameters will be described in the AI Script file as described in the 'spec' below.  If for any of the required parameters the user in their prompt has not provided a value, then get that information from them.  If for any of the required parameters the user ultimately fails to provide values, then inform the user that you can't run the script, and end the AI Script execution.  If any of the required has (as described in the 'spec' below) a default value, and if the user has not provided a value for that parameter, then in the confirmation (see next item) tell them about this parameter (and any others meeting this criteria) and tell them the default value it will be filled with
+ -- Right before running the script contained in the AI Script file - right before that, confirm with the user.
+ -- If your 'matching' has ambiguous results, hash things out with the user
+
+ "List AI Scripts [other text to be interpreted by you the AI]"
+    -- So for "List AI Scripts" it might be "List AI Scripts that manipulate the database"
+    -- Or "List AI Scripts tagged 'Database'"
+    -- Or any other stuff
+    -- For these sorts of prompts, examine the AI Script files (especially the name, description, and tags) for clues that might lead to the AI Script being included in the resulting list
+    -- For listing, by default (unless the prompt specifies otherwise) you display the name and description
+    -- To the extent possible, order the list by 'most confident in its inclusion' to 'least confident in its inclusion'
+
+ "Create an AI Script"
+   -- Never guess at contents/values to put in the resulting AI Script file.
+   -- Create a file in .cursor/ai-scripts (in the 'current directory') with the name.  If the prompt hasn't provided a name, ask the prompter for the name.  If you need to and do ask the user for a name and the user doesn't provide it, inform the user that the creation of the AI Script can't proceed.
+   -- The created file needs to be structured according to 'specs' as described below.  If there are any required 'contents' (like 'Description') that isn't provided in the prompt, ask the user for it before creating.  If it isn't required according to the specs, don't ask for it.  If it's required and you ask for it, but the user doesn't provide it, notify the user that you'll proceed without it but that the resulting AI Script might not be fully usable.
+   -- If the folder .cursor/ai-scripts doesnt't exist in the 'current directory', first create it.  That is, if '.cursor' doesn't exist, create it; if or once '.cursor' exists, if it doesn't have 'ai-scripts' directory, create it.
+   -- For any items in the 'spec' below that aren't required, first create the AI Script as described above; then list the pieces from the 'spec' that aren't in the created file, and ask the user if they would like to add any of those to the file.  Based on their response, proceed accordingly.  For the section 'Script', give the user the option of adding it by telling you the location of a file.  If they do that, then copy the contents of the file at that location, into the 'Script' section.  Also inform them that they can edit the AI Scripts file via Cursor, and tell them the location of that file.
+   -- For the "Cursor Rules Depended On" Section, add
+     ai-scripts.mdc
+     ai-execution.mdc
+
+   "Tell me about AI Script XXX"
+   -- Using information from the AI Script file, describe the AI Script to the user
+
+   "Show me AI Script XXX"
+   -- Show the user the contents of the AI Script
+
+
+## AI Script File
+- Each AI Script is a file in the folder .cursor/ai-scripts and the file should have no extension.  From the prompt "Run AI Script XXX" find a file whose name matches - like for the prompt "Run AI Script Set Global Settings", find a file whose name is "Set Global Settings".  To match, though, don't consider white space or casing in the prompt.  That is, for the prompt "Run AI Script Set Global Settings", a file in .cursor/ai-scripts named "setglobalsettings" would match.
+
+### Structure of AI Script File
+- First Line: `SECTION: frontmatter`
+- Next: 'SECTION: Parameters'
+  - This contains all the parameters the script accepts.
+  - Each 'parameter subsection' contains these lines
+    -- Name: [parameter name - this is required]
+    -- Required: ['true' or 'false']
+    -- Default: [a value; this is optional]
+- Next: 'SECTION: Cursor Rules Depended On' (List the Cursor Rules the AI must have in context for successful execution)
+- Next: 'SECTION: Notes' (Any Notes about this AI Script)
+- Next: `SECTION: Script` (contains the actual script)
+- The first two elements (title line and frontmatter section) must always be present and in that order.
+
+## Section Conventions
+- Each section except frontmatter is delimited by `SECTION: <section-name>`
+-- frontmatter is structured like a standard YAML frontmatter section with the '---' delimiters.  It consists of the following
+  - `description:` (a summary of the script)
+  - `tags:` (a comma-separated list or array of tags)
+  - Any other metadata as needed.  You the AI won't worry about this other metadata, the user just has the option to add it in there.
+
+## Example AI Script File
+---
+description: This AI Script demonstrates the protocol.
+tags: [example, demo]
+---
+SECTION: Script
+
+echo "hello"
+echo "goodbye"

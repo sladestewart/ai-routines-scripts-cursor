@@ -1,0 +1,80 @@
+---
+description: Describes the protocol for defining, storing, using - generally working with - AI Routines
+globs: 
+alwaysApply: false
+---
+# AI Routines Protocol
+
+
+## Matching this rule
+This rule is triggered with the following prompts, or with instructions in other Routines that 'look like the prompt':
+
+ "Run AI Routine XXX" (where 'XXX' is the AI Routine name)
+ -- First, tell the user that you're about to run the AI Routine and tell them the description
+ -- Then - always - read the AI Routine file that matched
+ -- Then, follow the steps in the "Steps" section of the AI Routine
+ -- If your 'matching' has ambiguous results, hash things out with the user
+
+ "List Routines [other text to be interpreted by you the AI]"
+    -- So for "List Routines" it might be "List Routines that manipulate the database"
+    -- Or "List Routines tagged 'Database'"
+    -- Or any other stuff
+    -- For listing, by default (unless the prompt specifies otherwise) you display the name and description
+
+ "Create an AI Routine"
+   -- Never guess at contents/values to put in the resulting AI Script file.
+   -- Create a file in .cursor/ai-routines (in the 'current directory') with the name.  If the prompt hasn't provided a name, ask the prompter for the name.  If you need to and do ask the user for a name and the user doesn't provide it, inform the user that the creation of the AI Routine can't proceed.
+   -- The created file needs to be structured according to 'specs' as described below.  If there are any required 'contents' (like 'Description') that isn't provided in the prompt, ask the user for it before creating.  If it isn't required according to the specs, don't ask for it.  If it's required and you ask for it, but the user doesn't provide it, notify the user that you'll proceed without it but that the resulting AI Routine might not be fully usable.
+   -- If the folder .cursor/ai-routines doesnt't exist in the 'current directory', first create it.  That is, if '.cursor' doesn't exist, create it; if or once '.cursor' exists, if it doesn't have 'ai-routines' directory, create it.
+   -- For any items in the 'spec' below that aren't required, first create the AI Routine as described above; then list the pieces from the 'spec' that aren't in the created file, and ask the user if they would like to add any of those to the file.  Based on their response, proceed accordingly.  For the section 'Steps', give the user the option of adding them one by one.  Also inform them that they can edit the AI Routines file via Cursor, and tell them the location of that file.
+   -- For the "Cursor Rules Depended On" Section, add
+     ai-routines.mdc
+     ai-execution.mdc
+     
+   "Tell me about AI Routine XXX"
+   -- Using information from the AI Routine file, describe the AI Routine to the user
+
+   "Show me AI Routine XXX"
+   -- Show the user the contents of the AI Routine
+
+# Silent Mode:
+    When the 'silent mode' flag is used, you MUST adhere to the following protocol:
+1. Suppress All Explanations:
+- Do not output any of the usual text that explains your steps (e.g., "I will now read the file," "I am creating a temporary script," etc.). Your internal 'explanation' for each tool call must be suppressed from the user-facing chat.
+2. Limit User Communication:
+- You are ONLY permitted to communicate with the user under three conditions:
+a. If a required parameter is missing and has no default value. You must ask the user for it.
+b. Upon successful completion of all steps, you may output a single, concise confirmation message, such as "Execution complete."
+c. If the AI Routine you're executing specifically instructs you to communicate with the user
+3. Proceed Without Narration:
+- Execute all required actions (reading files, running commands, deleting temporary files, etc.) without any narrative description.
+
+## AI Script File
+- Each AI Script is a file in the folder .cursor/ai-scripts and the file should have no extension.  From the prompt "Run AI Script XXX" find a file whose name matches - like for the prompt "Run AI Script Set Global Settings", find a file whose name is "Set Global Settings".  To match, though, don't consider white space or casing in the prompt.  That is, for the prompt "Run AI Script Set Global Settings", a file in .cursor/ai-scripts named "setglobalsettings" would match.
+
+
+## AI Routine File
+- Each AI Routine is a file in the folder .cursor/ai-routines and the file should have no extension.  From the prompt "Run AI Routine XXX" find a file whose name matches - like for the prompt "Run AI Routine Set Global Settings", find a file whose name is "Set Global Settings".  To match, though, don't consider white space or casing in the prompt.  That is, for the prompt "Run AI Routine Set Global Settings", a file in .cursor/ai-routines named "setglobalsettings" would match.
+
+### Structure of AI Routine File
+- First Line: `SECTION: frontmatter`
+- Next: 'SECTION: Cursor Rules Depended On' (List the Cursor Rules the AI must have in context for successful execution)
+- Next: 'SECTION: Notes' (Any Notes about this AI Routine)
+- Next: `SECTION: Steps` (natural language algorithm)
+- The first two elements (title line and frontmatter section) must always be present and in that order.
+
+## Section Conventions
+- Each section except frontmatter is delimited by `SECTION: <section-name>`
+-- frontmatter is structured like a standard YAML frontmatter section with the '---' delimiters.  It consists of the following
+  - `description:` (a summary of the routine)
+  - `tags:` (a comma-separated list or array of tags)
+  - Any other metadata as needed.  You the AI won't worry about this other metadata, the user just has the option to add it in there.
+
+## Example AI Routine File
+---
+description: This routine demonstrates the protocol.
+tags: [example, demo]
+---
+SECTION: Steps
+1. Say hello to the human.
+2. Say goodbye to the human.
