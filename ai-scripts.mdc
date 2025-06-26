@@ -73,3 +73,10 @@ SECTION: Script
 
 echo "hello"
 echo "goodbye"
+
+## Rules for running AI Scripts
+EVERY time you run an AI Script, you MUST apply these rules
+Rule 1: No Inference of Script Logic
+If the "Script" section of an AI Script is empty, missing, or contains only a placeholder (such as # TODO: Add script contents), you MUST NOT infer or execute any commands or logic based on the script’s name, description, or tags.
+-- Only execute what is explicitly present in the "Script" section.
+-- Do not attempt to "guess" or "fill in" the intended behavior.
